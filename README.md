@@ -7,10 +7,10 @@
 [![Render](https://img.shields.io/badge/Render-Deployed-brightgreen)](https://render.com/)
 [![License](https://img.shields.io/badge/License-Personnelle-orange)](LICENSE)
 
-## 🌐 Démo en Ligne
+##  Démo en Ligne
 
-🚀 **Accédez directement à l'application :**  
-👉 **[https://student-prediction-interface.onrender.com/static/index.html](https://student-prediction-interface.onrender.com/static/index.html)**
+ **Accédez directement à l'application :**  
+ **[https://student-prediction-interface.onrender.com/static/index.html](https://student-prediction-interface.onrender.com/static/index.html)**
 
 > ⚠️ *Premier chargement possiblement lent (hébergement gratuit Render)*
 
@@ -32,11 +32,12 @@
 
 ```
 dataikos/
-├── 📄 app.py                  # Backend FastAPI + modèle IA
-├── 📁 static/
-│   └── 📄 index.html          # Interface utilisateur complète
-│   └── 🎨 favicon.ico         # Icône de l'application
-└── 📄 README.md               # Documentation
+├── app.py
+├── requirements.txt
+├── runtime.txt         
+├── static/
+│   └── index.html
+└── Procfile
 ```
 
 ### Stack Technologique
@@ -49,7 +50,7 @@ dataikos/
 | **Validation** | Pydantic | Validation des données |
 | **Hébergement** | Render | Déploiement en production |
 
-## 🧠 Le Modèle IA
+##  Le Modèle IA
 
 ### 📈 Performance
 
@@ -231,24 +232,7 @@ curl -X POST "http://localhost:8000/api/predict" \
 → Prédiction: À RISQUE (Probabilité: ~35%)
 ```
 
-## 🚀 Déploiement sur Render
 
-### Configuration Simple
-
-1. **Créer un compte** sur [render.com](https://render.com)
-2. **Nouveau Web Service** → Connecter votre dépôt GitHub
-3. **Configuration :**
-   - **Build Command** : `pip install -r requirements.txt`
-   - **Start Command** : `uvicorn app:app --host 0.0.0.0 --port 10000`
-4. **Variables d'environnement** : Aucune nécessaire
-5. **Déployer** → Votre application est en ligne !
-
-### Fichiers Nécessaires
-
-- `app.py` (votre backend)
-- `requirements.txt` (dépendances)
-- `static/index.html` (frontend)
-- Optionnel : `Procfile` pour configuration avancée
 
 ## 🔍 Dépannage
 
@@ -311,13 +295,7 @@ Interdiction de :
 - ** Email** : meilleurd2001@gmail.com
 - ** Issues** : [GitHub Issues](https://github.com/monsieurMechant200/dataikos/issues)
 
----
 
-
-###  **Prêt à découvrir vos chances de réussite ?**
-
-[![Tester Maintenant](https://img.shields.io/badge/🚀_Tester_l'Application-00D4FF?style=for-the-badge&logo=rocket&logoColor=white)](https://student-prediction-interface.onrender.com/static/index.html)
-[![Documentation API](https://img.shields.io/badge/📚_Documentation_API-8A2BE2?style=for-the-badge&logo=readthedocs&logoColor=white)](https://student-prediction-interface.onrender.com/docs)
 
 *"Les données éclairent le chemin, mais c'est ta détermination qui trace la route."*  
 **— L'équipe DATAIKÔS**
