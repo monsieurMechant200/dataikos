@@ -1,0 +1,1431 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DATAIKÔS - Prédiction de Réussite</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+  <style>
+    :root {
+      --primary-bg: #0A0E27;
+      --secondary-bg: #1A1F3A;
+      --accent-color: #00D4FF;
+      --gold: #FFD700;
+      --success: #00FF88;
+      --warning: #FF6B35;
+      --text-primary: #FFFFFF;
+      --text-secondary: #B8B8B8;
+      --gradient-accent: linear-gradient(135deg, #00D4FF 0%, #0099CC 100%);
+      --gradient-success: linear-gradient(135deg, #00FF88 0%, #00CC6A 100%);
+      --gradient-error: linear-gradient(135deg, #FF6B35 0%, #CC3311 100%);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--primary-bg);
+      color: var(--text-primary);
+      overflow-x: hidden;
+      line-height: 1.6;
+      min-height: 100vh;
+      padding: 2rem;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 3rem;
+      animation: fadeInDown 0.8s ease;
+    }
+
+    .logo {
+      font-size: 2.5rem;
+      font-weight: 800;
+      background: var(--gradient-accent);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 0.5rem;
+    }
+
+    .subtitle {
+      color: var(--text-secondary);
+      font-size: 1.2rem;
+    }
+
+    .prediction-card {
+      background: var(--secondary-bg);
+      border-radius: 20px;
+      padding: 2.5rem;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(0, 212, 255, 0.2);
+      animation: fadeInUp 0.8s ease;
+    }
+
+    .form-section {
+      margin-bottom: 2rem;
+    }
+
+    .section-title {
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: var(--accent-color);
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .form-group label {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(0, 212, 255, 0.3);
+      border-radius: 10px;
+      padding: 0.75rem 1rem;
+      color: var(--text-primary);
+      font-size: 1rem;
+      transition: all 0.3s ease;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: var(--accent-color);
+      box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .form-group input::placeholder {
+      color: rgba(184, 184, 184, 0.5);
+    }
+
+    .predict-btn {
+      width: 100%;
+      padding: 1.2rem;
+      background: var(--gradient-accent);
+      border: none;
+      border-radius: 15px;
+      color: white;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-top: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .predict-btn:hover:not(:disabled) {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 30px rgba(0, 212, 255, 0.4);
+    }
+
+    .predict-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .result-container {
+      margin-top: 2rem;
+      padding: 2rem;
+      border-radius: 15px;
+      text-align: center;
+      animation: scaleIn 0.5s ease;
+      display: none;
+    }
+
+    .result-container.success {
+      background: rgba(0, 255, 136, 0.1);
+      border: 2px solid var(--success);
+      display: block;
+    }
+
+    .result-container.failure {
+      background: rgba(255, 107, 53, 0.1);
+      border: 2px solid var(--warning);
+      display: block;
+    }
+
+    .result-icon {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+    }
+
+    .result-container.success .result-icon {
+      color: var(--success);
+    }
+
+    .result-container.failure .result-icon {
+      color: var(--warning);
+    }
+
+    .result-title {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .result-container.success .result-title {
+      color: var(--success);
+    }
+
+    .result-container.failure .result-title {
+      color: var(--warning);
+    }
+
+    .result-description {
+      color: var(--text-secondary);
+      font-size: 1.1rem;
+    }
+
+    .result-probability {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+      font-size: 1rem;
+    }
+
+    .probability-bar {
+      width: 100%;
+      height: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      margin-top: 0.5rem;
+      overflow: hidden;
+    }
+
+    .probability-fill {
+      height: 100%;
+      transition: width 1s ease;
+      border-radius: 10px;
+    }
+
+    .result-container.success .probability-fill {
+      background: var(--gradient-success);
+    }
+
+    .result-container.failure .probability-fill {
+      background: var(--gradient-error);
+    }
+
+    .spinner {
+      border: 3px solid rgba(255, 255, 255, 0.1);
+      border-top: 3px solid var(--accent-color);
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    @keyframes fadeInDown {
+      from {
+        opacity: 0;
+        transform: translateY(-30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes scaleIn {
+      from {
+        opacity: 0;
+        transform: scale(0.9);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    .info-tooltip {
+      display: inline-block;
+      margin-left: 0.3rem;
+      color: var(--accent-color);
+      cursor: help;
+      font-size: 0.8rem;
+    }
+
+    @media (max-width: 768px) {
+      body {
+        padding: 1rem;
+      }
+
+      .prediction-card {
+        padding: 1.5rem;
+      }
+
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .logo {
+        font-size: 2rem;
+      }
+    }
+
+    /* Résultats Zone */
+    .results-zone {
+      margin-top: 3rem;
+      animation: fadeInUp 0.6s ease;
+    }
+
+    /* Verdict Card */
+    .verdict-card {
+      background: var(--secondary-bg);
+      border-radius: 20px;
+      padding: 3rem;
+      text-align: center;
+      margin-bottom: 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .verdict-card::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(0,212,255,0.1) 0%, transparent 70%);
+      animation: pulse 3s ease-in-out infinite;
+    }
+
+    .verdict-card.success {
+      border: 2px solid var(--success);
+    }
+
+    .verdict-card.failure {
+      border: 2px solid var(--warning);
+    }
+
+    .verdict-icon {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+    }
+
+    .verdict-card.success .verdict-icon {
+      color: var(--success);
+    }
+
+    .verdict-card.failure .verdict-icon {
+      color: var(--warning);
+    }
+
+    .verdict-title {
+      font-size: 2.5rem;
+      font-weight: 800;
+      margin-bottom: 0.5rem;
+    }
+
+    .verdict-probability {
+      font-size: 1.3rem;
+      color: var(--text-secondary);
+      margin-bottom: 1rem;
+    }
+
+    .verdict-message {
+      font-size: 1.1rem;
+      line-height: 1.6;
+      max-width: 600px;
+      margin: 0 auto;
+      color: var(--text-primary);
+    }
+
+    /* Profile Card */
+    .profile-card {
+      background: var(--secondary-bg);
+      border-radius: 20px;
+      padding: 2.5rem;
+      margin-bottom: 2rem;
+      border: 1px solid rgba(0,212,255,0.2);
+    }
+
+    .card-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      color: var(--accent-color);
+    }
+
+    .card-subtitle {
+      color: var(--text-secondary);
+      margin-bottom: 2rem;
+    }
+
+    .radar-container {
+      max-width: 500px;
+      margin: 2rem auto;
+      height: 400px;
+    }
+
+    .profile-summary {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      margin-top: 2rem;
+    }
+
+    .summary-column h4 {
+      font-size: 1.1rem;
+      margin-bottom: 1rem;
+      color: var(--text-primary);
+    }
+
+    .summary-column ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .summary-column ul li {
+      padding: 0.5rem 1rem;
+      margin-bottom: 0.5rem;
+      background: rgba(255,255,255,0.05);
+      border-radius: 10px;
+      border-left: 3px solid var(--accent-color);
+    }
+
+    /* Recommendations Card */
+    .recommendations-card {
+      background: var(--secondary-bg);
+      border-radius: 20px;
+      padding: 2.5rem;
+      margin-bottom: 2rem;
+      border: 1px solid rgba(255,215,0,0.3);
+    }
+
+    .recommendation-item {
+      background: rgba(255,255,255,0.03);
+      border-radius: 15px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      border-left: 4px solid;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .recommendation-item:hover {
+      transform: translateX(5px);
+      background: rgba(255,255,255,0.06);
+    }
+
+    .recommendation-item.priority-1 {
+      border-left-color: #FF6B35;
+      background: rgba(255,107,53,0.05);
+    }
+
+    .recommendation-item.priority-2 {
+      border-left-color: #FFD700;
+      background: rgba(255,215,0,0.05);
+    }
+
+    .recommendation-item.priority-3 {
+      border-left-color: #00D4FF;
+      background: rgba(0,212,255,0.05);
+    }
+
+    .rec-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      margin-bottom: 1rem;
+    }
+
+    .rec-title {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 1.2rem;
+      font-weight: 600;
+    }
+
+    .rec-badges {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .badge {
+      padding: 0.3rem 0.8rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .badge.priority {
+      background: rgba(255,107,53,0.2);
+      color: #FF6B35;
+    }
+
+    .badge.impact {
+      background: rgba(0,255,136,0.2);
+      color: var(--success);
+    }
+
+    .rec-diagnosis {
+      color: var(--text-secondary);
+      margin-bottom: 1rem;
+      line-height: 1.5;
+    }
+
+    .rec-actions {
+      margin-bottom: 1rem;
+    }
+
+    .rec-actions h5 {
+      color: var(--accent-color);
+      margin-bottom: 0.5rem;
+      font-size: 0.95rem;
+    }
+
+    .rec-actions ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .rec-actions li {
+      padding: 0.5rem 0;
+      padding-left: 1.5rem;
+      position: relative;
+      color: var(--text-primary);
+    }
+
+    .rec-actions li::before {
+      content: '✓';
+      position: absolute;
+      left: 0;
+      color: var(--success);
+      font-weight: bold;
+    }
+
+    .rec-footer {
+      display: flex;
+      gap: 1rem;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      padding-top: 1rem;
+      border-top: 1px solid rgba(255,255,255,0.1);
+    }
+
+    /* Simulator Card */
+    .simulator-card {
+      background: var(--secondary-bg);
+      border-radius: 20px;
+      padding: 2.5rem;
+      margin-bottom: 2rem;
+      border: 1px solid rgba(0,212,255,0.3);
+    }
+
+    .simulator-controls {
+      margin-bottom: 2rem;
+    }
+
+    .control-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .control-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+
+    .control-group input[type="range"] {
+      width: 100%;
+      height: 8px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 10px;
+      outline: none;
+      -webkit-appearance: none;
+    }
+
+    .control-group input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      background: var(--accent-color);
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: 0 0 10px rgba(0,212,255,0.5);
+    }
+
+    .simulator-result {
+      background: rgba(0,212,255,0.1);
+      border-radius: 15px;
+      padding: 2rem;
+      text-align: center;
+    }
+
+    .simulator-result h4 {
+      margin-bottom: 1.5rem;
+      color: var(--accent-color);
+    }
+
+    .probability-comparison {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 2rem;
+      margin-bottom: 1rem;
+    }
+
+    .prob-before,
+    .prob-after {
+      text-align: center;
+    }
+
+    .prob-label {
+      display: block;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      margin-bottom: 0.5rem;
+    }
+
+    .prob-value {
+      display: block;
+      font-size: 2rem;
+      font-weight: 800;
+    }
+
+    .prob-value.highlight {
+      color: var(--success);
+      text-shadow: 0 0 20px rgba(0,255,136,0.5);
+    }
+
+    .prob-arrow {
+      font-size: 2rem;
+      color: var(--accent-color);
+    }
+
+    .simulator-message {
+      margin-top: 1rem;
+      font-style: italic;
+      color: var(--text-secondary);
+    }
+
+    /* DATAIKÔS Signature */
+    .dataikos-signature {
+      display: flex;
+      gap: 1.5rem;
+      align-items: start;
+      background: linear-gradient(135deg, rgba(0,212,255,0.1) 0%, rgba(255,215,0,0.1) 100%);
+      border-radius: 20px;
+      padding: 2rem;
+      margin-top: 3rem;
+      border: 2px solid rgba(255,215,0,0.3);
+    }
+
+    .dataikos-logo {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      border: 3px solid var(--gold);
+      flex-shrink: 0;
+      background: var(--secondary-bg);
+      padding: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      font-weight: 800;
+      background: var(--gradient-accent);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .dataikos-quote {
+      flex: 1;
+    }
+
+    .dataikos-quote p {
+      color: var(--text-primary);
+      line-height: 1.6;
+      margin-bottom: 0.5rem;
+    }
+
+    .dataikos-quote em {
+      font-style: italic;
+    }
+
+    .dataikos-sign {
+      text-align: right;
+      color: var(--gold);
+      font-weight: 600;
+      margin-top: 1rem;
+    }
+
+    /* Animations */
+    @keyframes pulse {
+      0%, 100% {
+        opacity: 0.5;
+      }
+      50% {
+        opacity: 1;
+      }
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .profile-summary {
+        grid-template-columns: 1fr;
+      }
+      
+      .probability-comparison {
+        flex-direction: column;
+        gap: 1rem;
+      }
+      
+      .prob-arrow {
+        transform: rotate(90deg);
+      }
+      
+      .dataikos-signature {
+        flex-direction: column;
+        text-align: center;
+      }
+      
+      .dataikos-logo {
+        margin: 0 auto;
+      }
+      
+      .radar-container {
+        height: 300px;
+      }
+    }
+
+    /* Alert */
+    .alert {
+      padding: 1rem;
+      border-radius: 10px;
+      margin: 1rem 0;
+      display: none;
+    }
+    
+    .alert.error {
+      background: rgba(255, 107, 53, 0.1);
+      border: 1px solid var(--warning);
+      color: var(--warning);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .alert.success {
+      background: rgba(0, 255, 136, 0.1);
+      border: 1px solid var(--success);
+      color: var(--success);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1 class="logo">DATAIKÔS PREDICT</h1>
+      <p class="subtitle">Prédiction de Réussite Étudiante et Recommandation par IA</p>
+    </div>
+
+    <div class="alert error" id="errorAlert" style="display: none;">
+      <i class="fas fa-exclamation-circle"></i>
+      <span id="errorMessage"></span>
+    </div>
+
+    <div class="prediction-card">
+      <form id="predictionForm">
+        <div class="form-section">
+          <h2 class="section-title">
+            <i class="fas fa-user"></i>
+            Informations Personnelles
+          </h2>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>
+                Âge
+                <i class="fas fa-info-circle info-tooltip" title="Votre âge en années"></i>
+              </label>
+              <input type="number" id="age" name="Age" required min="15" max="100" placeholder="Ex: 20" value="20">
+            </div>
+
+            <div class="form-group">
+              <label>
+                Genre
+                <i class="fas fa-info-circle info-tooltip" title="0 = Femme, 1 = Homme"></i>
+              </label>
+              <select id="gender" name="Gender" required>
+                <option value="">Sélectionner...</option>
+                <option value="0" selected>Femme</option>
+                <option value="1">Homme</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>
+                Niveau d'études
+                <i class="fas fa-info-circle info-tooltip" title="1 = Niveau1, 2 = Niveau2, 3 = Niveau3, 4 = Niveau4, 5 = Niveau5"></i>
+              </label>
+              <select id="level" name="Level" required>
+                <option value="">Sélectionner...</option>
+                <option value="1">Niveau 1</option>
+                <option value="2" selected>Niveau 2</option>
+                <option value="3">Niveau 3</option>
+                <option value="4">Niveau 4</option>
+                <option value="5">Niveau 5</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>
+                Situation de vie
+                <i class="fas fa-info-circle info-tooltip" title="0 = Chez parents, 1 = Seul, 2 = Colocation"></i>
+              </label>
+              <select id="livingSituation" name="Living_Situation" required>
+                <option value="">Sélectionner...</option>
+                <option value="0" selected>Chez les parents</option>
+                <option value="1">Seul(e)</option>
+                <option value="2">En colocation</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h2 class="section-title">
+            <i class="fas fa-graduation-cap"></i>
+            Performances Académiques
+          </h2>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>
+                GPA (Moyenne du semestre précédent)
+                <i class="fas fa-info-circle info-tooltip" title="Votre moyenne générale (sur 20)"></i>
+              </label>
+              <input type="number" id="gpa" name="GPA" required min="0" max="20" step="0.01" placeholder="Ex: 14.5" value="14.5">
+            </div>
+
+            <div class="form-group">
+              <label>
+                Qualité d'enseignement
+                <i class="fas fa-info-circle info-tooltip" title="Note sur la qualité des cours (0-3)"></i>
+              </label>
+              <select id="teachingQuality" name="Teaching_Quality" required>
+                <option value="">Sélectionner...</option>
+                <option value="0">Mauvaise</option>
+                <option value="1">Moyenne</option>
+                <option value="2" selected>Bonne</option>
+                <option value="3">Excellente</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>
+                Sessions de labo
+                <i class="fas fa-info-circle info-tooltip" title="Participation aux labs (0 = Non, 1 = Oui)"></i>
+              </label>
+              <select id="labSessions" name="Lab_Sessions" required>
+                <option value="">Sélectionner...</option>
+                <option value="0">Non</option>
+                <option value="1" selected>Oui</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>
+                Méthode d'Étude
+                <i class="fas fa-info-circle info-tooltip" title="Niveau de planification (0-2)"></i>
+              </label>
+              <select id="structuredPlan" name="Structured_Plan" required>
+                <option value="">Sélectionner...</option>
+                <option value="0">Aucun Prédéfinie</option>
+                <option value="1" selected>Seul</option>
+                <option value="2">En Groupe</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h2 class="section-title">
+            <i class="fas fa-heartbeat"></i>
+            Habitudes de Vie
+          </h2>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>
+                Heures de sommeil/jour
+                <i class="fas fa-info-circle info-tooltip" title="Heures moyennes de sommeil par jour"></i>
+              </label>
+              <input type="number" id="sleepHours" name="Sleep_Hours_Daily" required min="0" max="24" step="0.5" placeholder="Ex: 7.5" value="7.5">
+            </div>
+
+            <div class="form-group">
+              <label>
+                Activité physique
+                <i class="fas fa-info-circle info-tooltip" title="Niveau d'activité (0 = Aucune, 1 = Modérée, 2 = Intense)"></i>
+              </label>
+              <select id="physicalActivity" name="Physical_Activity" required>
+                <option value="">Sélectionner...</option>
+                <option value="0">Aucune</option>
+                <option value="1" selected>Modérée</option>
+                <option value="2">Intense</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>
+                Heures d'étude/semaine
+                <i class="fas fa-info-circle info-tooltip" title="Heures d'étude par semaine"></i>
+              </label>
+              <input type="number" id="studyHours" name="Study_Hours_Weekly" required min="0" max="168" placeholder="Ex: 20" value="20">
+            </div>
+
+            <div class="form-group">
+              <label>
+                Régularité en classe
+                <i class="fas fa-info-circle info-tooltip" title="Note de régularité (0-6)"></i>
+              </label>
+              <input type="number" id="classRegularity" name="Class_Regularity" required min="0" max="6" step="0.1" placeholder="Ex: 4.5" value="4.5">
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h2 class="section-title">
+            <i class="fas fa-lightbulb"></i>
+            Facteurs de Succès
+          </h2>
+          <div class="form-group">
+            <label>
+              Facteurs de succès
+              <i class="fas fa-info-circle info-tooltip" title="Décrivez les facteurs qui contribuent à votre succès"></i>
+              <span id="successFactorsCount" style="font-size: 0.8rem; color: var(--text-secondary);">(0 caractères)</span>
+            </label>
+            <textarea id="successFactorsText" name="Success_Factors" rows="4" placeholder="Ex: Bonne organisation, soutien familial, motivation personnelle...">Bonne organisation, soutien familial, motivation personnelle, intérêt pour les matières étudiées.</textarea>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h2 class="section-title">
+            <i class="fas fa-tools"></i>
+            Suggestions d'Amélioration
+          </h2>
+          <div class="form-group">
+            <label>
+              Suggestions d'amélioration
+              <i class="fas fa-info-circle info-tooltip" title="Idées pour améliorer vos performances"></i>
+              <span id="improvementSuggestionsCount" style="font-size: 0.8rem; color: var(--text-secondary);">(0 caractères)</span>
+            </label>
+            <textarea id="improvementSuggestionsText" name="Improvement_Suggestions" rows="4" placeholder="Ex: Plus de pratique, meilleur sommeil, participation active en classe...">Plus de pratique des exercices, améliorer la prise de notes, participer plus activement en classe.</textarea>
+          </div>
+        </div>
+
+        <button type="submit" class="predict-btn" id="predictBtn">
+          <i class="fas fa-magic"></i>
+          <span>Prédire la Réussite</span>
+        </button>
+      </form>
+
+      <!-- Section Résultats Enrichis -->
+      <div class="results-zone" id="resultsZone" style="display: none;">
+        
+        <!-- 1. Verdict Principal -->
+        <div class="verdict-card" id="verdictCard">
+          <div class="verdict-icon">
+            <i class="fas fa-trophy"></i>
+          </div>
+          <h2 class="verdict-title" id="verdictTitle">RÉUSSI ✓</h2>
+          <p class="verdict-probability">Probabilité: <span id="mainProbability">0%</span></p>
+          <p class="verdict-message" id="motivationalMessage"></p>
+        </div>
+
+        <!-- 2. Profil Radar -->
+        <div class="profile-card">
+          <h3 class="card-title">📊 Ton Profil en 5 Dimensions</h3>
+          <p class="card-subtitle">Score global: <strong id="overallScore">0</strong>/10 - <span id="riskLevel"></span></p>
+          
+          <div class="radar-container">
+            <canvas id="radarChart"></canvas>
+          </div>
+          
+          <div class="profile-summary">
+            <div class="summary-column">
+              <h4>💪 Tes Forces</h4>
+              <ul id="strongPointsList"></ul>
+            </div>
+            <div class="summary-column">
+              <h4>🎯 À Travailler</h4>
+              <ul id="weakPointsList"></ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Recommandations -->
+        <div class="recommendations-card">
+          <h3 class="card-title">🚀 Ton Plan d'Action Personnalisé</h3>
+          <p class="card-subtitle">Créé par DATAIKÔS - <span id="recCount">0</span> recommandations</p>
+          
+          <div id="recommendationsList"></div>
+        </div>
+
+        <!-- 4. Simulateur -->
+        <div class="simulator-card">
+          <h3 class="card-title">🎮 Simulateur: Et Si Tu Suivais Ces Conseils?</h3>
+          <p class="card-subtitle">Ajuste les curseurs pour voir l'impact sur ta réussite</p>
+          
+          <div class="simulator-controls">
+            <div class="control-group">
+              <label>📚 Heures d'étude/semaine: <span id="studyHoursDisplay">0</span>h</label>
+              <input type="range" id="studyHoursSlider" min="0" max="40" step="1" value="20">
+            </div>
+            
+            <div class="control-group">
+              <label>😴 Heures de sommeil/jour: <span id="sleepHoursDisplay">0</span>h</label>
+              <input type="range" id="sleepHoursSlider" min="4" max="10" step="0.5" value="7.5">
+            </div>
+            
+            <div class="control-group">
+              <label>✅ Assiduité: <span id="regularityDisplay">0</span>/6</label>
+              <input type="range" id="regularitySlider" min="0" max="6" step="0.5" value="4.5">
+            </div>
+          </div>
+          
+          <div class="simulator-result">
+            <h4>📈 Nouvelle probabilité estimée</h4>
+            <div class="probability-comparison">
+              <div class="prob-before">
+                <span class="prob-label">Avant</span>
+                <span class="prob-value" id="probBefore">0%</span>
+              </div>
+              <div class="prob-arrow">→</div>
+              <div class="prob-after">
+                <span class="prob-label">Après</span>
+                <span class="prob-value highlight" id="probAfter">0%</span>
+              </div>
+            </div>
+            <p class="simulator-message" id="simulatorMessage"></p>
+          </div>
+        </div>
+
+        <!-- 5. DATAIKÔS Message Final -->
+        <div class="dataikos-signature">
+          <div class="dataikos-logo">D</div>
+          <div class="dataikos-quote">
+            <p>"<em>Souviens-toi : ta réussite n'est pas une question de SI, mais de COMMENT. 
+            Les données montrent le chemin, mais c'est toi qui marches. Je crois en toi! 🌱</em>"</p>
+            <p class="dataikos-sign">- DATAIKÔS</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Compteur de caractères pour Success Factors
+    const successFactorsText = document.getElementById('successFactorsText');
+    const successFactorsCount = document.getElementById('successFactorsCount');
+    
+    successFactorsText.addEventListener('input', function() {
+      const length = this.value.length;
+      successFactorsCount.textContent = `(${length} caractères)`;
+      successFactorsCount.style.color = length >= 150 ? 'var(--success)' : 
+                                      length >= 50 ? 'var(--gold)' : 
+                                      'var(--warning)';
+    });
+
+    // Compteur de caractères pour Improvement Suggestions
+    const improvementSuggestionsText = document.getElementById('improvementSuggestionsText');
+    const improvementSuggestionsCount = document.getElementById('improvementSuggestionsCount');
+    
+    improvementSuggestionsText.addEventListener('input', function() {
+      const length = this.value.length;
+      improvementSuggestionsCount.textContent = `(${length} caractères)`;
+      improvementSuggestionsCount.style.color = length >= 150 ? 'var(--success)' : 
+                                               length >= 50 ? 'var(--gold)' : 
+                                               'var(--warning)';
+    });
+
+    // Initialiser les compteurs
+    successFactorsText.dispatchEvent(new Event('input'));
+    improvementSuggestionsText.dispatchEvent(new Event('input'));
+
+    let currentData = null;
+    let radarChartInstance = null;
+    let currentProbability = 0;
+
+    // Afficher/cacher les messages d'erreur
+    function showError(message) {
+      const alert = document.getElementById('errorAlert');
+      const errorMessage = document.getElementById('errorMessage');
+      errorMessage.textContent = message;
+      alert.style.display = 'flex';
+      setTimeout(() => {
+        alert.style.display = 'none';
+      }, 5000);
+    }
+
+    // Soumission du formulaire
+document.getElementById('predictionForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  
+  const btn = document.getElementById('predictBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner" aria-hidden="true"></div><span>DATAIKÔS analyse ton profil...</span>';
+  btn.setAttribute("aria-busy", "true");
+
+  // Préparer les données
+  const formData = new FormData(e.target);
+  currentData = {
+    Age: parseFloat(formData.get('Age')),
+    Gender: parseInt(formData.get('Gender')),
+    Level: parseInt(formData.get('Level')),
+    GPA: parseFloat(formData.get('GPA')),
+    Teaching_Quality: parseFloat(formData.get('Teaching_Quality')),
+    Lab_Sessions: parseInt(formData.get('Lab_Sessions')),
+    Structured_Plan: parseInt(formData.get('Structured_Plan')),
+    Living_Situation: parseInt(formData.get('Living_Situation')),
+    Sleep_Hours_Daily: parseFloat(formData.get('Sleep_Hours_Daily')),
+    Physical_Activity: parseInt(formData.get('Physical_Activity')),
+    Success_Factors_Len: formData.get('Success_Factors').length,
+    Improvement_Suggestions_Len: formData.get('Improvement_Suggestions').length,
+    Study_Hours_Weekly: parseInt(formData.get('Study_Hours_Weekly')),
+    Class_Regularity: parseFloat(formData.get('Class_Regularity'))
+  };
+  
+  try {
+    // CORRECTION ICI : Utilisez l'URL complète avec http://
+    const response = await fetch('http://localhost:8000/api/predict', {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify(currentData)
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Erreur ${response.status}: ${errorText}`);
+    }
+    
+    const result = await response.json();
+    displayResults(result);
+    
+  } catch (error) {
+    console.error('Erreur détaillée:', error);
+    showError(`Erreur de connexion: ${error.message}. Vérifiez que le serveur backend est en cours d'exécution (port 8000).`);
+  } finally {
+    btn.innerHTML = '<i class="fas fa-magic"></i><span>Prédire la Réussite</span>';
+    btn.removeAttribute("aria-busy");
+    btn.disabled = false;
+  }
+});
+
+    function displayResults(result) {
+      const zone = document.getElementById('resultsZone');
+      zone.style.display = 'block';
+      
+      currentProbability = result.probability * 100;
+      
+      // 1. Verdict
+      const verdictCard = document.getElementById('verdictCard');
+      const isSuccess = result.prediction === 1;
+      verdictCard.className = 'verdict-card ' + (isSuccess ? 'success' : 'failure');
+      
+      const verdictIcon = verdictCard.querySelector('.verdict-icon i');
+      verdictIcon.className = isSuccess ? 'fas fa-trophy' : 'fas fa-exclamation-triangle';
+      
+      document.getElementById('verdictTitle').textContent = isSuccess ? 'RÉUSSI ✓' : 'À RISQUE ⚠️';
+      document.getElementById('mainProbability').textContent = currentProbability.toFixed(1)*100 + '%';
+      document.getElementById('motivationalMessage').textContent = result.motivational_message;
+
+      // 2. Profil
+      document.getElementById('overallScore').textContent = result.profile.overall_score;
+      document.getElementById('riskLevel').textContent = result.profile.risk_level;
+      
+      // Forces
+      const strongList = document.getElementById('strongPointsList');
+      if (result.profile.strong_points && result.profile.strong_points.length > 0) {
+        strongList.innerHTML = result.profile.strong_points.map(p => `<li>✅ ${p}</li>`).join('');
+      } else {
+        strongList.innerHTML = '<li style="color: var(--text-secondary); font-style: italic;">Continue de développer tes compétences</li>';
+      }
+      
+      // Faiblesses
+      const weakList = document.getElementById('weakPointsList');
+      if (result.profile.weak_points && result.profile.weak_points.length > 0) {
+        weakList.innerHTML = result.profile.weak_points.map(p => `<li>🎯 ${p}</li>`).join('');
+      } else {
+        weakList.innerHTML = '<li style="color: var(--success); font-style: italic;">Aucun point faible majeur détecté!</li>';
+      }
+      
+      // Graphique radar
+      createRadarChart(result.profile.dimensions);
+      
+      // 3. Recommandations
+      const recCount = result.recommendations ? result.recommendations.length : 0;
+      document.getElementById('recCount').textContent = recCount;
+      
+      const recList = document.getElementById('recommendationsList');
+      if (recCount > 0) {
+        recList.innerHTML = result.recommendations.map(rec => `
+          <div class="recommendation-item priority-${rec.priority}">
+            <div class="rec-header">
+              <div class="rec-title">
+                <span>${rec.emoji || '📋'}</span>
+                <span>${rec.title}</span>
+              </div>
+              <div class="rec-badges">
+                <span class="badge priority">Priorité ${rec.priority}</span>
+                <span class="badge impact">${rec.impact || 'Modéré'}</span>
+              </div>
+            </div>
+            
+            <p class="rec-diagnosis">${rec.diagnosis}</p>
+            
+            <div class="rec-actions">
+              <h5>💪 Actions concrètes:</h5>
+              <ul>
+                ${rec.actions ? rec.actions.map(action => `<li>${action}</li>`).join('') : '<li>Consulter un conseiller pédagogique</li>'}
+              </ul>
+            </div>
+            
+            <div class="rec-footer">
+              <span>⏱️ ${rec.timeframe || '2 semaines'}</span>
+              <span>•</span>
+              <span>📊 Difficulté: ${rec.difficulty || 'Modéré'}</span>
+              <span>•</span>
+              <span>🎯 ${rec.category || 'Général'}</span>
+            </div>
+          </div>
+        `).join('');
+      } else {
+        recList.innerHTML = '<p style="text-align: center; color: var(--text-secondary); font-style: italic;">Aucune recommandation spécifique nécessaire. Continue sur ta bonne lancée!</p>';
+      }
+      
+      // 4. Simulateur
+      initSimulator(result);
+      
+      // Scroll vers résultats
+      zone.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function createRadarChart(dimensions) {
+      const ctx = document.getElementById('radarChart').getContext('2d');
+      
+      // Détruire ancien graphique si existe
+      if (radarChartInstance) {
+        radarChartInstance.destroy();
+      }
+      
+      const labels = dimensions.map(d => d.name);
+      const scores = dimensions.map(d => d.score);
+      const icons = dimensions.map(d => d.icon);
+      
+      radarChartInstance = new Chart(ctx, {
+        type: 'radar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Ton Profil',
+            data: scores,
+            backgroundColor: 'rgba(0, 212, 255, 0.2)',
+            borderColor: 'rgba(0, 212, 255, 1)',
+            borderWidth: 2,
+            pointBackgroundColor: 'rgba(0, 212, 255, 1)',
+            pointBorderColor: '#fff',
+            pointHoverBackgroundColor: '#fff',
+            pointHoverBorderColor: 'rgba(0, 212, 255, 1)'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            r: {
+              beginAtZero: true,
+              max: 10,
+              min: 0,
+              ticks: {
+                stepSize: 2,
+                color: '#B8B8B8',
+                backdropColor: 'transparent'
+              },
+              grid: {
+                color: 'rgba(255, 255, 255, 0.1)'
+              },
+              angleLines: {
+                color: 'rgba(255, 255, 255, 0.1)'
+              },
+              pointLabels: {
+                color: '#FFFFFF',
+                font: {
+                  size: 12,
+                  weight: '500'
+                },
+                callback: function(value, index) {
+                  return icons[index] + ' ' + value;
+                }
+              }
+            }
+          },
+          plugins: {
+            legend: {
+              display: false
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const label = context.label || '';
+                  const value = context.raw || 0;
+                  const dimension = dimensions[context.dataIndex];
+                  return `${label}: ${value}/10 (${dimension.status})`;
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function initSimulator(result) {
+      // Valeurs initiales
+      document.getElementById('studyHoursSlider').value = currentData.Study_Hours_Weekly;
+      document.getElementById('studyHoursDisplay').textContent = currentData.Study_Hours_Weekly;
+      
+      document.getElementById('sleepHoursSlider').value = currentData.Sleep_Hours_Daily;
+      document.getElementById('sleepHoursDisplay').textContent = currentData.Sleep_Hours_Daily;
+      
+      document.getElementById('regularitySlider').value = currentData.Class_Regularity;
+      document.getElementById('regularityDisplay').textContent = currentData.Class_Regularity;
+      
+      const baseProb = result.probability * 100;
+      document.getElementById('probBefore').textContent = baseProb.toFixed(1) + '%';
+      document.getElementById('probAfter').textContent = baseProb.toFixed(1) + '%';
+      
+      // Événements
+      document.getElementById('studyHoursSlider').addEventListener('input', updateSimulation);
+      document.getElementById('sleepHoursSlider').addEventListener('input', updateSimulation);
+      document.getElementById('regularitySlider').addEventListener('input', updateSimulation);
+    }
+
+    function updateSimulation() {
+      const studyHours = parseFloat(document.getElementById('studyHoursSlider').value);
+      const sleepHours = parseFloat(document.getElementById('sleepHoursSlider').value);
+      const regularity = parseFloat(document.getElementById('regularitySlider').value);
+      
+      document.getElementById('studyHoursDisplay').textContent = studyHours;
+      document.getElementById('sleepHoursDisplay').textContent = sleepHours;
+      document.getElementById('regularityDisplay').textContent = regularity;
+      
+      // Calcul de l'amélioration basé sur des facteurs réalistes
+      const studyImprovement = Math.min((studyHours - currentData.Study_Hours_Weekly) / 5, 10); // Max 10% par 5h
+      const sleepImprovement = sleepHours >= 7.5 ? 5 : Math.max(sleepHours - 6, 0) * 2; // Bonus si sommeil optimal
+      const regularityImprovement = Math.min((regularity - currentData.Class_Regularity) * 3, 12); // Max 12%
+      
+      const totalImprovement = studyImprovement + sleepImprovement + regularityImprovement;
+      const newProbability = Math.min(Math.max(currentProbability + totalImprovement, 0), 95);
+      
+      document.getElementById('probAfter').textContent = newProbability.toFixed(1) + '%';
+      
+      // Message personnalisé
+      const improvement = newProbability - currentProbability;
+      let message = '';
+      
+      if (improvement > 15) {
+        message = `🚀 Transformation complète ! +${improvement.toFixed(1)}% de chances. Tes efforts paient énormément !`;
+      } else if (improvement > 8) {
+        message = `💪 Progrès significatif ! +${improvement.toFixed(1)}%. Continue sur cette voie, tu y es presque !`;
+      } else if (improvement > 3) {
+        message = `👍 Bonne progression ! +${improvement.toFixed(1)}%. Chaque petit changement compte dans la durée.`;
+      } else if (improvement > 0) {
+        message = `📈 Légère amélioration de +${improvement.toFixed(1)}%. Persévère pour des résultats plus marqués.`;
+      } else if (improvement < -5) {
+        message = `⚠️ Attention baisse de ${Math.abs(improvement).toFixed(1)}%. Ces changements négatifs impactent tes chances.`;
+      } else {
+        message = '📊 État stable. Maintiens tes bonnes habitudes pour conserver tes chances.';
+      }
+      
+      document.getElementById('simulatorMessage').textContent = message;
+    }
+
+    // Test de connexion au backend au chargement
+    window.addEventListener('load', async () => {
+      try {
+           const response = await fetch('http://127.0.0.1:8000/health');
+        if (!response.ok) {
+          showError('Le serveur backend n\'est pas accessible. Lance-le avec: python main.py');
+        }
+      } catch (error) {
+        showError('Le serveur backend n\'est pas accessible. Lance-le avec: python main.py');
+      }
+    });
+  </script>
+</body>
+</html>
