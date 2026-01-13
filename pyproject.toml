@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "dataikos"
+version = "0.1.0"
+description = ""
+authors = ["David Meilleur <meilleurd2001@email.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.11"  
+fastapi = "0.100.0"
+uvicorn = "0.23.2"
+numpy = "1.24.3"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
