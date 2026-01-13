@@ -1,0 +1,100 @@
+# ------------------------
+# .gitignore pour projet Python / data
+# Inspiré de ton exemple + entrées courantes
+# ------------------------
+
+# Python cachés / compilés
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Environnements virtuels
+.env
+.venv
+env/
+venv/
+ENV/
+
+# Gestionnaires / paquets / builds
+*.egg-info/
+*.egg
+dist/
+build/
+eggs/
+parts/
+bin/
+.installed.cfg
+.eggs/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Poetry / pipenv / pipx
+.python-version
+.pipenv/
+poetry.lock
+
+# Tests / couverture
+htmlcov/
+.tox/
+.nox/
+.pytest_cache/
+.coverage
+.coverage.*
+coverage.xml
+nosetests.xml
+*.cover
+*.py,cover
+
+# Jupyter
+.ipynb_checkpoints
+*.ipynb
+
+# PyInstaller
+*.manifest
+*.spec
+
+# C extensions / compilés
+*.o
+*.so
+
+# Logs et bases locales
+*.log
+*.sqlite3
+*.db
+*.sqlite
+
+# Données / résultats (à adapter selon ton projet)
+data/
+datasets/
+outputs/
+results/
+*.parquet
+*.h5
+*.hdf5
+
+# IDEs & éditeurs
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
+*~
+
+# Système
+.DS_Store
+Thumbs.db
+
+# Secrets / variables d'environnement locales
+.env.local
+.env.*.local
+.envrc
+secrets.json
+credentials.json
+
+# Autres fichiers temporaires
+tmp/
+temp/
+.cache/
